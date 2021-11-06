@@ -14,7 +14,7 @@ LINKER_SCRIPT = econotag.ld
 
 # Directorio de la toolchain de GNU
 # Toolchain de los repositorios
-TOOLS_PATH     = /usr
+TOOLS_PATH     = ~/bin/gcc-arm-none-eabi
 # Toolchain construida a partir de las fuentes en el ordenador local
 #TOOLS_PATH     = /opt/econotag
 # Toolchain construida a partir de las fuentes en los laboratorios
@@ -29,7 +29,7 @@ EXTRA_TOOLS_PATH = ../tools
 
 # Detalles de la plataforma
 SRAM_BASE = 0x00400000
-SERIAL_PORT = /dev/ttyUSB1
+SERIAL_PORT = /dev/cu.usbserial-141201
 BAUDRATE = 115200
 
 #

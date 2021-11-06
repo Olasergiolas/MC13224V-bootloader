@@ -40,6 +40,7 @@
 #include <stdint.h>
 #include <getopt.h>
 #include <ftdi.h>
+#include <stdlib.h>
 
 #define DEBUG 0
 
