@@ -20,7 +20,7 @@ DIST_DIR        = $(BSP_ROOT_DIR)/dist
 
 # Directorio de la toolchain de GNU
 # Toolchain de los repositorios
-TOOLS_PATH     = /usr
+TOOLS_PATH     = ~/bin/gcc-arm-none-eabi
 # Toolchain construida a partir de las fuentes en el ordenador local
 #TOOLS_PATH     = /opt/econotag
 # Toolchain construida a partir de las fuentes en los laboratorios
