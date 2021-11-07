@@ -26,6 +26,23 @@ SECTIONS
 		*(.startup) ;
 	} > ram
 
+	.text :
+	{
+		*(.text) ;
+	} > ram
+
+	.data :
+	{
+		*(.data) ;
+		. = ALIGN(4) ;
+	} > ram
+
+	.rodata :
+	{
+		*(.rodata*) ;
+		. = ALIGN(4) ;
+	} > ram
+
 	/* Sección .bss */
 	/* Generamos una sección para las variables globales sin inicializar */
 	.bss :

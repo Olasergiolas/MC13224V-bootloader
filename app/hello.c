@@ -17,11 +17,22 @@ volatile uint32_t * const reg_gpio_pad_dir1    = (uint32_t *) 0x80000004;
 /* Dirección del registro de activación de bits del GPIO32-GPIO63 */
 volatile uint32_t * const reg_gpio_data_set1   = (uint32_t *) 0x8000004c;
 
+volatile uint32_t * const reg_gpio_data_set0   = (uint32_t *) 0x80000048;
+
+volatile uint32_t * const reg_gpio_data0   = (uint32_t *) 0x80000008;
+
 /* Dirección del registro de limpieza de bits del GPIO32-GPIO63 */
 volatile uint32_t * const reg_gpio_data_reset1 = (uint32_t *) 0x80000054;
 
 /* El led rojo está en el GPIO 44 (el bit 12 de los registros GPIO_X_1) */
-uint32_t const led_red_mask = (1 << (44-32));
+uint32_t const led_red_mask = (1 << 12);
+uint32_t const led_green_mask = (1 << 13);
+
+uint32_t const btn_red_o_mask = (1 << 23);
+uint32_t const btn_red_i_mask = (1 << 27);
+
+uint32_t const btn_green_o_mask = (1 << 22);
+uint32_t const btn_green_i_mask = (1 << 26);
 
 /*
  * Constantes relativas a la aplicacion
@@ -36,7 +47,8 @@ uint32_t const delay = 0x10000;
 void gpio_init(void)
 {
 	/* Configuramos el GPIO44 para que sea de salida */
-	*reg_gpio_pad_dir1 = led_red_mask;
+	*reg_gpio_pad_dir1 = led_red_mask | led_green_mask;
+	*reg_gpio_data_set0 = btn_red_o_mask | btn_green_o_mask;
 }
 
 /*****************************************************************************/
@@ -70,11 +82,25 @@ void leds_off (uint32_t mask)
  */
 void pause(void)
 {
-        uint32_t i;
+    uint32_t i;
 	for (i=0 ; i<delay ; i++);
 }
 
 /*****************************************************************************/
+
+
+uint32_t const test_buttons(uint32_t last_mask){
+	const uint32_t data0 = *reg_gpio_data0;
+	
+	if ((data0 & btn_red_i_mask) != 0)
+		return led_red_mask;
+
+	else if ((data0 & btn_green_i_mask) != 0)
+		return led_green_mask;
+
+	else
+		return last_mask;
+}
 
 /*
  * Máscara del led que se hará parpadear
@@ -87,20 +113,19 @@ uint32_t the_led;
 int main ()
 {
 	gpio_init();
-
-        the_led = led_red_mask;
+    the_led = led_red_mask;
 
 	while (1)
 	{
+		the_led = test_buttons(the_led);
 		leds_on(the_led);
-                pause();
+        pause();
 
 		leds_off(the_led);
-                pause();
+		the_led = test_buttons(the_led);
+        pause();
 	}
-
-        return 0;
+	return 0;
 }
-
 /*****************************************************************************/
 
