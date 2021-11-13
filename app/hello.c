@@ -6,6 +6,7 @@
 /*****************************************************************************/
 
 #include <stdint.h>
+#include "system.h"
 
 /*
  * Constantes relativas a la plataforma
@@ -102,6 +103,12 @@ uint32_t const test_buttons(uint32_t last_mask){
 		return last_mask;
 }
 
+__attribute__ ((interrupt ("<UNDEF>")))
+void undef_handler (void)
+{
+	leds_on(led_green_mask);
+}
+
 /*
  * Máscara del led que se hará parpadear
  */
@@ -113,16 +120,18 @@ uint32_t the_led;
 int main ()
 {
 	gpio_init();
+	excep_set_handler(excep_undef, undef_handler);
     the_led = led_red_mask;
 
+	asm(".word 0x26889912\n");
 	while (1)
 	{
-		the_led = test_buttons(the_led);
+		//the_led = test_buttons(the_led);
 		leds_on(the_led);
         pause();
 
 		leds_off(the_led);
-		the_led = test_buttons(the_led);
+		//the_led = test_buttons(the_led);
         pause();
 	}
 	return 0;
