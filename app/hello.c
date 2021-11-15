@@ -119,7 +119,9 @@ uint32_t the_led;
  */
 int main ()
 {
+	uint32_t if_bits =  excep_disable_ints();
 	gpio_init();
+	excep_restore_ints(if_bits);
 	excep_set_handler(excep_undef, undef_handler);
     the_led = led_red_mask;
 
