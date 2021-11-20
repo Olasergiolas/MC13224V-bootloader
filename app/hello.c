@@ -103,7 +103,7 @@ uint32_t const test_buttons(uint32_t last_mask){
 		return last_mask;
 }
 
-__attribute__ ((interrupt ("<UNDEF>")))
+__attribute__ ((interrupt ("UNDEF")))
 void undef_handler (void)
 {
 	leds_on(led_green_mask);
