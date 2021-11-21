@@ -12,7 +12,21 @@
  */
 typedef struct
 {
+	//Aquí va la página 204 del manual
 	/* ESTA ESTRUCTURA SE DEFINIRÁ EN LA PRÁCTICA 6 */
+	u_int32_t INTCNTL;
+	u_int32_t NIMASK;
+	u_int32_t INTENNUM;
+	u_int32_t INTDISNUM;
+	u_int32_t INTENABLE;
+	u_int32_t INTTYPE;
+	u_int32_t INTRESERVED[4];
+	u_int32_t NIVECTOR;
+	u_int32_t FIVECTOR;
+	u_int32_t INTSRC;
+	u_int32_t INTFRC;
+	u_int32_t NIPEND;
+	u_int32_t FIPEND;
 } itc_regs_t;
 
 static volatile itc_regs_t* const itc_regs = ITC_BASE;
@@ -21,6 +35,8 @@ static volatile itc_regs_t* const itc_regs = ITC_BASE;
  * Tabla de manejadores de interrupción.
  */
 static itc_handler_t itc_handlers[itc_src_max];
+
+static u_int32_t saved_int_status = 0;
 
 /*****************************************************************************/
 
@@ -33,6 +49,13 @@ static itc_handler_t itc_handlers[itc_src_max];
 inline void itc_init ()
 {
 	/* ESTA FUNCIÓN SE DEFINIRÁ EN LA PRÁCTICA 6 */
+	for (int i = 0; i < itc_src_max; ++i){
+		itc_handlers[i] = 0;
+	}
+	
+	itc_regs->INTFRC = 0;
+	itc_regs->INTENABLE = 0;
+	itc_regs->INTCNTL &= ~(3 << 19);
 }
 
 /*****************************************************************************/
@@ -44,6 +67,8 @@ inline void itc_init ()
 inline void itc_disable_ints ()
 {
 	/* ESTA FUNCIÓN SE DEFINIRÁ EN LA PRÁCTICA 6 */
+	saved_int_status = itc_regs->INTENABLE;
+	itc_regs->INTENABLE = 0;
 }
 
 /*****************************************************************************/
@@ -55,6 +80,7 @@ inline void itc_disable_ints ()
 inline void itc_restore_ints ()
 {
 	/* ESTA FUNCIÓN SE DEFINIRÁ EN LA PRÁCTICA 6 */
+	itc_regs->INTENABLE = saved_int_status;
 }
 
 /*****************************************************************************/
@@ -67,6 +93,7 @@ inline void itc_restore_ints ()
 inline void itc_set_handler (itc_src_t src, itc_handler_t handler)
 {
 	/* ESTA FUNCIÓN SE DEFINIRÁ EN LA PRÁCTICA 6 */
+	itc_handlers[src] = handler;
 }
 
 /*****************************************************************************/
@@ -79,6 +106,7 @@ inline void itc_set_handler (itc_src_t src, itc_handler_t handler)
 inline void itc_set_priority (itc_src_t src, itc_priority_t priority)
 {
 	/* ESTA FUNCIÓN SE DEFINIRÁ EN LA PRÁCTICA 6 */
+	itc_regs->INTTYPE = priority << src; 
 }
 
 /*****************************************************************************/
@@ -90,6 +118,7 @@ inline void itc_set_priority (itc_src_t src, itc_priority_t priority)
 inline void itc_enable_interrupt (itc_src_t src)
 {
 	/* ESTA FUNCIÓN SE DEFINIRÁ EN LA PRÁCTICA 6 */
+	itc_regs->INTENNUM = src;
 }
 
 /*****************************************************************************/
@@ -101,6 +130,7 @@ inline void itc_enable_interrupt (itc_src_t src)
 inline void itc_disable_interrupt (itc_src_t src)
 {
 	/* ESTA FUNCIÓN SE DEFINIRÁ EN LA PRÁCTICA 6 */
+	itc_regs->INTDISNUM = src;
 }
 
 /*****************************************************************************/
@@ -112,6 +142,8 @@ inline void itc_disable_interrupt (itc_src_t src)
 inline void itc_force_interrupt (itc_src_t src)
 {
 	/* ESTA FUNCIÓN SE DEFINIRÁ EN LA PRÁCTICA 6 */
+	uint32_t status = itc_regs->INTFRC;
+	itc_regs->INTFRC = status | (1 << src);
 }
 
 /*****************************************************************************/
@@ -123,6 +155,8 @@ inline void itc_force_interrupt (itc_src_t src)
 inline void itc_unforce_interrupt (itc_src_t src)
 {
 	/* ESTA FUNCIÓN SE DEFINIRÁ EN LA PRÁCTICA 6 */
+	uint32_t status = itc_regs->INTFRC;
+	itc_regs->INTFRC = status & ~(1 << src);
 }
 
 /*****************************************************************************/
@@ -136,6 +170,7 @@ inline void itc_unforce_interrupt (itc_src_t src)
 void itc_service_normal_interrupt ()
 {
 	/* ESTA FUNCIÓN SE DEFINIRÁ EN LA PRÁCTICA 6 */
+	itc_handlers[itc_regs->NIVECTOR]();
 }
 
 /*****************************************************************************/
@@ -146,6 +181,7 @@ void itc_service_normal_interrupt ()
 void itc_service_fast_interrupt ()
 {
 	/* ESTA FUNCIÓN SE DEFINIRÁ EN LA PRÁCTICA 6 */
+	itc_handlers[itc_regs->FIVECTOR]();
 }
 
 /*****************************************************************************/

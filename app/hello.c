@@ -109,6 +109,12 @@ void undef_handler (void)
 	leds_on(led_green_mask);
 }
 
+void int_asm_handler (void)
+{
+	itc_unforce_interrupt(itc_src_asm);
+	leds_on(led_green_mask);
+}
+
 /*
  * Máscara del led que se hará parpadear
  */
@@ -119,13 +125,19 @@ uint32_t the_led;
  */
 int main ()
 {
-	uint32_t if_bits =  excep_disable_ints();
+	/*uint32_t if_bits =  excep_disable_ints();
 	gpio_init();
 	excep_restore_ints(if_bits);
 	excep_set_handler(excep_undef, undef_handler);
-    the_led = led_red_mask;
+	asm(".word 0x26889912\n");*/
 
-	asm(".word 0x26889912\n");
+	gpio_init();
+    the_led = led_red_mask;
+	excep_set_handler(excep_irq, excep_nonnested_irq_handler);
+	itc_set_handler(itc_src_asm, int_asm_handler);
+	itc_enable_interrupt(itc_src_asm);
+	itc_force_interrupt(itc_src_asm);
+
 	while (1)
 	{
 		//the_led = test_buttons(the_led);
