@@ -12,8 +12,6 @@
  */
 typedef struct
 {
-	//Aquí va la página 204 del manual
-	/* ESTA ESTRUCTURA SE DEFINIRÁ EN LA PRÁCTICA 6 */
 	u_int32_t INTCNTL;
 	u_int32_t NIMASK;
 	u_int32_t INTENNUM;
@@ -48,7 +46,6 @@ static u_int32_t saved_int_status = 0;
  */
 inline void itc_init ()
 {
-	/* ESTA FUNCIÓN SE DEFINIRÁ EN LA PRÁCTICA 6 */
 	for (int i = 0; i < itc_src_max; ++i){
 		itc_handlers[i] = 0;
 	}
@@ -66,7 +63,6 @@ inline void itc_init ()
  */
 inline void itc_disable_ints ()
 {
-	/* ESTA FUNCIÓN SE DEFINIRÁ EN LA PRÁCTICA 6 */
 	saved_int_status = itc_regs->INTENABLE;
 	itc_regs->INTENABLE = 0;
 }
@@ -105,8 +101,16 @@ inline void itc_set_handler (itc_src_t src, itc_handler_t handler)
  */
 inline void itc_set_priority (itc_src_t src, itc_priority_t priority)
 {
-	/* ESTA FUNCIÓN SE DEFINIRÁ EN LA PRÁCTICA 6 */
-	itc_regs->INTTYPE = priority << src; 
+	switch (priority)
+	{
+	case itc_priority_fast:
+		itc_regs->INTTYPE = (1 << src);
+		break;
+	
+	case itc_priority_normal:
+		itc_regs->INTTYPE = itc_regs->INTTYPE & ~(1 << src);
+		break;
+	}
 }
 
 /*****************************************************************************/
@@ -117,7 +121,6 @@ inline void itc_set_priority (itc_src_t src, itc_priority_t priority)
  */
 inline void itc_enable_interrupt (itc_src_t src)
 {
-	/* ESTA FUNCIÓN SE DEFINIRÁ EN LA PRÁCTICA 6 */
 	itc_regs->INTENNUM = src;
 }
 
@@ -129,7 +132,6 @@ inline void itc_enable_interrupt (itc_src_t src)
  */
 inline void itc_disable_interrupt (itc_src_t src)
 {
-	/* ESTA FUNCIÓN SE DEFINIRÁ EN LA PRÁCTICA 6 */
 	itc_regs->INTDISNUM = src;
 }
 
@@ -141,7 +143,6 @@ inline void itc_disable_interrupt (itc_src_t src)
  */
 inline void itc_force_interrupt (itc_src_t src)
 {
-	/* ESTA FUNCIÓN SE DEFINIRÁ EN LA PRÁCTICA 6 */
 	uint32_t status = itc_regs->INTFRC;
 	itc_regs->INTFRC = status | (1 << src);
 }
@@ -154,7 +155,6 @@ inline void itc_force_interrupt (itc_src_t src)
  */
 inline void itc_unforce_interrupt (itc_src_t src)
 {
-	/* ESTA FUNCIÓN SE DEFINIRÁ EN LA PRÁCTICA 6 */
 	uint32_t status = itc_regs->INTFRC;
 	itc_regs->INTFRC = status & ~(1 << src);
 }
@@ -169,7 +169,6 @@ inline void itc_unforce_interrupt (itc_src_t src)
  */
 void itc_service_normal_interrupt ()
 {
-	/* ESTA FUNCIÓN SE DEFINIRÁ EN LA PRÁCTICA 6 */
 	itc_handlers[itc_regs->NIVECTOR]();
 }
 
@@ -180,7 +179,6 @@ void itc_service_normal_interrupt ()
  */
 void itc_service_fast_interrupt ()
 {
-	/* ESTA FUNCIÓN SE DEFINIRÁ EN LA PRÁCTICA 6 */
 	itc_handlers[itc_regs->FIVECTOR]();
 }
 

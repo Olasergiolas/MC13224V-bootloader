@@ -206,7 +206,6 @@ inline excep_handler_t excep_get_handler (excep_t excep)
 __attribute__ ((interrupt ("IRQ")))
 void excep_nonnested_irq_handler ()
 {
-	/* ESTA FUNCIÓN SE DEFINIRÁ EN LA PRÁCTICA 6 */
 	itc_service_normal_interrupt();
 }
 
