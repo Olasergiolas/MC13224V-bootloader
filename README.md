@@ -2,7 +2,7 @@
 
 ## Description
 
-This is an ongoing effort to write a bootloader (BSP, HAL, drivers, etc.) in ASM and C for the MC1322x family of ARM processors.
+This is an ongoing effort to write a bootloader (BSP, HAL, drivers, etc.) in ASM and C for the MC1322x family of ARM SoCs.
 
 ## References
 
