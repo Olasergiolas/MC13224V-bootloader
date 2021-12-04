@@ -7,6 +7,7 @@
 #include <errno.h>
 #include "system.h"
 #include "circular_buffer.h"
+#include "sys/types.h"
 
 /*****************************************************************************/
 
@@ -16,7 +17,78 @@
 
 typedef struct
 {
-	/* ESTA ESTRUCTURA SE DEFINIRÁ EN LA PRÁCTICA 8 */
+	union
+	{
+		struct
+		{
+			uint32_t TxE		:1;
+			uint32_t RxE		:1;
+			uint32_t PEN		:1;
+			uint32_t EP			:1;
+			uint32_t ST2		:1;
+			uint32_t SB 		:1;
+			uint32_t conTx		:1;
+			uint32_t Tx_oen_b	:1;
+			uint32_t 			:2;
+			uint32_t xTIM		:1;
+			uint32_t FCp		:1;
+			uint32_t FCe		:1;
+			uint32_t mTxR 		:1;
+			uint32_t mRxR 		:1;
+			uint32_t TST 		:1;
+
+		};
+		uint32_t UCON;
+	};
+
+	union
+	{
+		struct
+		{
+			uint32_t SE		:1;
+			uint32_t PE		:1;
+			uint32_t FE		:1;
+			uint32_t TOE	:1;
+			uint32_t ROE	:1;
+			uint32_t RUE 	:1;
+			uint32_t RxRdy	:1;
+			uint32_t TxRdy	:1;
+		};
+		uint32_t USTAT;
+	};
+
+	union
+	{
+		uint8_t Rx_data;
+		uint8_t Tx_data;
+		uint32_t UDATA;
+	};
+
+	union
+	{
+		uint32_t RxLevel			:5;
+		uint32_t Rx_fifo_addr_diff	:6;
+		uint32_t URxCON;
+	};
+
+	union
+	{
+		uint32_t TxLevel			:5;
+		uint32_t Tx_fifo_addr_diff	:6;
+		uint32_t UTxCON;
+	};
+
+	uint32_t UCTS;
+
+	union
+	{
+		struct
+		{
+			uint32_t BRMOD	:16;
+			uint32_t BRINC 	:16;
+		};
+		uint32_t BR;
+	};
 } uart_regs_t;
 
 /*****************************************************************************/
@@ -84,6 +156,26 @@ static volatile uart_callbacks_t uart_callbacks[uart_max];
 int32_t uart_init (uart_id_t uart, uint32_t br, const char *name)
 {
 	/* ESTA FUNCIÓN SE DEFINIRÁ EN LAS PRÁCTICAS 8, 9 y 10 */
+	uint32_t mod = 9999;
+	uint32_t inc = br * mod / (CPU_FREQ >> 4);
+	
+	uart_regs[uart]->UCON = (1 << 13) | (1 << 14);
+	uart_regs[uart]->TxE = 0;
+	uart_regs[uart]->RxE = 0;
+	
+	uart_regs[uart]->BR = ( inc << 16 ) | mod;
+
+	uart_regs[uart]->UCON |= (1 << 0) | (1 << 1);
+	
+	gpio_set_pin_func(uart_pins[uart].tx, gpio_func_alternate_1);
+	gpio_set_pin_func(uart_pins[uart].rx, gpio_func_alternate_1);
+	gpio_set_pin_func(uart_pins[uart].cts, gpio_func_alternate_1);
+	gpio_set_pin_func(uart_pins[uart].rts, gpio_func_alternate_1);
+
+	gpio_set_pin_dir_output(uart_pins[uart].tx);
+	gpio_set_pin_dir_output(uart_pins[uart].cts);
+	gpio_set_pin_dir_input(uart_pins[uart].rx);
+	gpio_set_pin_dir_input(uart_pins[uart].rts);
 
 	return 0;
 }
@@ -98,8 +190,10 @@ int32_t uart_init (uart_id_t uart, uint32_t br, const char *name)
  */
 void uart_send_byte (uart_id_t uart, uint8_t c)
 {
-	/* ESTA FUNCIÓN SE DEFINIRÁ EN LA PRÁCTICA 8 */
+	while(uart_regs[uart]->Tx_fifo_addr_diff == 0);
+	uart_regs[uart]->Tx_data = c;
 }
+
 
 /*****************************************************************************/
 
@@ -111,8 +205,9 @@ void uart_send_byte (uart_id_t uart, uint8_t c)
  */
 uint8_t uart_receive_byte (uart_id_t uart)
 {
-	/* ESTA FUNCIÓN SE DEFINIRÁ EN LA PRÁCTICA 8 */
-        return 0;
+	while(uart_regs[uart]->Rx_fifo_addr_diff == 0);
+	
+	return uart_regs[uart]->Rx_data;
 }
 
 /*****************************************************************************/
