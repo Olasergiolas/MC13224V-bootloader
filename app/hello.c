@@ -132,16 +132,42 @@ int main ()
 {
 	gpio_init();
 	the_led = led_red_mask;
+	char c = '\0';
+	char error[] = "Uso: r(ed) g(reen)\n\r";
+	uint32_t leds[2] = {0, 0};
 
 	while (1)
 	{
-		the_led = test_buttons(the_led);
-		leds_on(the_led);
-        pause();
+		c = uart_receive_byte(uart_1);
+		if (c == 'r'){
+			leds[0] != leds[0];
+			if (!leds[0]){
+				leds_off(led_green_mask);
+				leds_on(led_red_mask);
+			}
 
-		leds_off(the_led);
-		the_led = test_buttons(the_led);
-        pause();
+			else
+				leds_off(led_red_mask);
+		}
+
+		else if (c == 'g' && !leds[1]){
+			leds[1] != leds[1];
+			if (!leds[1]){
+				leds_on(led_green_mask);
+				leds_off(led_red_mask);
+			}
+
+			else
+				leds_off(led_green_mask);
+		}
+
+		else{
+			for (unsigned i = 0; i < strlen(error); ++i){
+				uart_send_byte(uart_1 ,error[i]);
+				c = '\0';
+			}
+			
+		}
 	}
 	return 0;
 }
