@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include "system.h"
+#include <string.h>
 
 /*
  * Constantes relativas a la plataforma
@@ -124,6 +125,24 @@ void int_asm_handler (void)
  * Máscara del led que se hará parpadear
  */
 uint32_t the_led;
+uint8_t red_blinking = 1;
+uint8_t green_blinking = 1;
+uart_id_t uart = uart_1;
+char error[] = "Uso: r(ed) g(reen)\n\r";
+
+void uart_rx_callback(void){
+	char c = '\0'; 
+	uart_receive(uart, &c, 1);
+
+	if (c == 'r')
+		red_blinking = !red_blinking;
+	
+	else if (c == 'g')
+		green_blinking = !green_blinking;
+
+	else if (c != '\0')
+		uart_send(uart, error, strlen(error));
+}
 
 /*
  * Programa principal
@@ -131,43 +150,20 @@ uint32_t the_led;
 int main ()
 {
 	gpio_init();
-	the_led = led_red_mask;
-	char c = '\0';
-	char error[] = "Uso: r(ed) g(reen)\n\r";
-	uint32_t leds[2] = {0, 0};
+	uart_set_receive_callback(uart, uart_rx_callback);
 
 	while (1)
 	{
-		c = uart_receive_byte(uart_1);
-		if (c == 'r'){
-			leds[0] != leds[0];
-			if (!leds[0]){
-				leds_off(led_green_mask);
-				leds_on(led_red_mask);
-			}
+		pause();
+		if (red_blinking)
+			leds_on(led_red_mask);
 
-			else
-				leds_off(led_red_mask);
-		}
+		if (green_blinking)
+			leds_on(led_green_mask);
 
-		else if (c == 'g' && !leds[1]){
-			leds[1] != leds[1];
-			if (!leds[1]){
-				leds_on(led_green_mask);
-				leds_off(led_red_mask);
-			}
-
-			else
-				leds_off(led_green_mask);
-		}
-
-		else{
-			for (unsigned i = 0; i < strlen(error); ++i){
-				uart_send_byte(uart_1 ,error[i]);
-				c = '\0';
-			}
-			
-		}
+		pause();
+		leds_off(led_red_mask);
+		leds_off(led_green_mask);
 	}
 	return 0;
 }
