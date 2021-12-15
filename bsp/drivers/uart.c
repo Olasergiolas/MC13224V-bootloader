@@ -156,7 +156,12 @@ static volatile uart_callbacks_t uart_callbacks[uart_max];
 int32_t uart_init (uart_id_t uart, uint32_t br, const char *name)
 {
 	/* ESTA FUNCIÓN SE DEFINIRÁ EN LAS PRÁCTICAS 8, 9 y 10 */
-	if (uart >= uart_max || br <= 0){
+	if (uart >= uart_max){
+		errno = ENODEV;
+		return -1;
+	}
+
+	else if (name == 0){
 		errno = EFAULT;
 		return -1;
 	}
@@ -269,7 +274,12 @@ uint8_t uart_receive_byte (uart_id_t uart)
  */
 ssize_t uart_send (uint32_t uart, char *buf, size_t count)
 {
-	if (uart >= uart_max || buf == 0 || count <= 0){
+	if (uart >= uart_max){
+		errno = ENODEV;
+		return -1;
+	}
+
+	else if (buf == 0 || count <= 0){
 		errno = EFAULT;
 		return -1;
 	}
@@ -306,7 +316,12 @@ ssize_t uart_send (uint32_t uart, char *buf, size_t count)
  */
 ssize_t uart_receive (uint32_t uart, char *buf, size_t count)
 {
-	if (uart >= uart_max || buf == 0 || count <= 0){
+	if (uart >= uart_max){
+		errno = ENODEV;
+		return -1;
+	}
+
+	else if (buf == 0 || count <= 0){
 		errno = EFAULT;
 		return -1;
 	}
@@ -336,7 +351,12 @@ ssize_t uart_receive (uint32_t uart, char *buf, size_t count)
  */
 int32_t uart_set_receive_callback (uart_id_t uart, uart_callback_t func)
 {
-	if (uart >= uart_max || func == 0){
+	if (uart >= uart_max){
+		errno = ENODEV;
+		return -1;
+	}
+
+	else if (func == 0){
 		errno = EFAULT;
 		return -1;
 	}
@@ -356,7 +376,12 @@ int32_t uart_set_receive_callback (uart_id_t uart, uart_callback_t func)
  */
 int32_t uart_set_send_callback (uart_id_t uart, uart_callback_t func)
 {
-	if (uart >= uart_max || func == 0){
+	if (uart >= uart_max){
+		errno = ENODEV;
+		return -1;
+	}
+
+	else if (func == 0){
 		errno = EFAULT;
 		return -1;
 	}
