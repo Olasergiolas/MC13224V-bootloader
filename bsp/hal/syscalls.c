@@ -69,7 +69,18 @@ void * _sbrk (intptr_t incr)
  */
 int _open(const char *pathname, int flags, mode_t mode)
 {
-	/* ESTA FUNCIÓN SE DEFINIRÁ EN LA PRÁCTICA 10 */
+	bsp_dev_t *dev = find_dev(pathname);
+
+	if (dev){
+		if (dev->open)
+			if (dev->open(dev->id, flags, mode) >= 0)
+				return get_fd(dev, flags);
+		else
+			errno = ENOTSUP;
+	}
+
+	else
+		errno = ENODEV;
 
 	return -1;
 }
@@ -84,8 +95,15 @@ int _open(const char *pathname, int flags, mode_t mode)
  */
 int _close (int fd)
 {
-	/* ESTA FUNCIÓN SE DEFINIRÁ EN LA PRÁCTICA 10 */
-	return -1;
+	bsp_dev_t *dev = get_dev(fd);
+	
+	release_fd(fd);
+	if (dev && dev->close)
+		return dev->close(dev->id);
+	else {
+		errno = EBADF;
+		return -1;
+	}
 }
 
 /*****************************************************************************/
@@ -100,8 +118,12 @@ int _close (int fd)
  */
 ssize_t _read(int fd, char *buf, size_t count)
 {
-	/* ESTA FUNCIÓN SE DEFINIRÁ EN LA PRÁCTICA 10 */
-	return 0;
+	bsp_dev_t *dev = get_dev(fd);
+	
+	if (dev && dev->read)
+		return dev->read(dev->id, buf, count);
+	else
+		return 0;
 }
 
 /*****************************************************************************/
@@ -116,8 +138,12 @@ ssize_t _read(int fd, char *buf, size_t count)
  */
 ssize_t _write (int fd, char *buf, size_t count)
 {
-	/* ESTA FUNCIÓN SE DEFINIRÁ EN LA PRÁCTICA 10 */
-	return count;
+	bsp_dev_t *dev = get_dev(fd);
+	
+	if (dev && dev->write)
+		return dev->write(dev->id, buf, count);
+	else
+		return count;
 }
 
 /*****************************************************************************/
@@ -132,8 +158,12 @@ ssize_t _write (int fd, char *buf, size_t count)
  */
 off_t _lseek(int fd, off_t offset, int whence)
 {
-	/* ESTA FUNCIÓN SE DEFINIRÁ EN LA PRÁCTICA 10 */
-	return 0;
+	bsp_dev_t *dev = get_dev(fd);
+	
+	if (dev && dev->lseek)
+		return dev->lseek(dev->id, offset, whence);
+	else
+		return 0;
 }
 
 /*****************************************************************************/
@@ -147,7 +177,14 @@ off_t _lseek(int fd, off_t offset, int whence)
  */
 int _fstat(int fd, struct stat *buf)
 {
-	/* ESTA FUNCIÓN SE DEFINIRÁ EN LA PRÁCTICA 10 */
+	bsp_dev_t *dev = get_dev(fd);
+	
+	if (dev && dev->fstat)
+		return dev->fstat(dev->id, buf);
+	else {
+		buf->st_mode = S_IFCHR;
+		return 0;
+	}
 	return 0;
 }
 
@@ -161,8 +198,12 @@ int _fstat(int fd, struct stat *buf)
  */
 int _isatty (int fd)
 {
-	/* ESTA FUNCIÓN SE DEFINIRÁ EN LA PRÁCTICA 10 */
-	return 1;
+	bsp_dev_t *dev = get_dev(fd);
+	
+	if (dev && dev->isatty)
+		return dev->isatty(dev->id);
+	else
+		return 1;
 }
 
 /*****************************************************************************/

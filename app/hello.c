@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include "system.h"
 #include <string.h>
+#include <stdio.h>
 
 /*
  * Constantes relativas a la plataforma
@@ -132,7 +133,7 @@ char error[] = "Uso: r(ed) g(reen)\n\r";
 
 void uart_rx_callback(void){
 	char c = '\0'; 
-	uart_receive(uart, &c, 1);
+	c = getchar();
 
 	if (c == 'r')
 		red_blinking = !red_blinking;
@@ -141,7 +142,7 @@ void uart_rx_callback(void){
 		green_blinking = !green_blinking;
 
 	else if (c != '\0')
-		uart_send(uart, error, strlen(error));
+		printf(error);
 }
 
 /*

@@ -204,6 +204,8 @@ int32_t uart_init (uart_id_t uart, uint32_t br, const char *name)
 	uart_callbacks[uart].tx_callback = 0;
 
 	uart_regs[uart]->mRxR = 0;
+
+	bsp_register_dev(name, uart, 0, 0, uart_receive, uart_send, 0, 0, 0);
 	return 0;
 }
 
